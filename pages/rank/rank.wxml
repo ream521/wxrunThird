@@ -1,0 +1,47 @@
+<!--pages/rank/rank.wxml-->
+<view class="container">
+    <view class="userinfo">
+        <view class="run-step">
+            <view class="wx-run">{{rank.today_step}}</view>
+            <view class="wx-rank"> {{rank.rank}} </view>
+        </view>
+        <view class="circle">
+            <image src="{{rank.avatar}}" class="avatar"></image>
+        </view>
+        <view class="tname">{{rank.nickname}}</view>
+    </view>
+
+    <!--图表  -->
+    <view class="" wx:if="{{!isDetail && chartList !=null}}">
+         <canvas canvas-id="lineCanvas" disable-scroll="true" class="canvas" bindtouchstart="touchHandler" bindtouchmove="moveHandler" bindtouchend="touchEndHandler"></canvas>
+    </view>
+
+    <view class="content content-top" wx:if="{{!isDetail}}">
+        <view class="tabs row " style='background:#fff;' wx:if="{{!istm}}">
+            <view class="tab-c {{today ? 'active':''}}" bindtap="today">
+                今日榜单
+                <view class="tip" hidden="{{all}}"></view>
+            </view>
+            <view class="tab-c {{all ? 'active':''}}" bindtap="all">
+                本期榜单
+                <view class="tip" hidden="{{today}}"></view>
+            </view>   
+        </view>
+    </view>
+    <view class="content content-top" wx:if="{{isDetail}}">
+        <view class="tabs row " style='background:#fff;'>
+            <view class="btn btn-default" bindtap="returnList">
+               返回团队榜
+            </view>  
+        </view>
+    </view>    
+    <view class="content">
+        <view class="row" wx:for="{{rankList}}" wx:for-index="id" wx:for-item="item" wx:key="key" bindtap="teamDetail" id="{{item.id}}">
+           <text class="rank">{{id+1}}</text>
+           <image class="img" src="{{item.avatar}}"></image>
+           <text class="nickname">{{item.nickname}}</text>
+           <view class="step">{{item.today_step}}<text class="unit">步</text></view>
+        </view>
+    </view>
+
+</view>
