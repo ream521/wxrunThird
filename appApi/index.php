@@ -617,7 +617,7 @@ function getRankList($uniacid,$appid){
 
         $team = getTeam($user['tm_id']);
 
-        $sql = "SELECT rt.id,rt.team_name as nickname,rt.team_img as avatar,SUM(rw.today_step) as today_step FROM ".tablename('wxrun_wxrun')." rw JOIN ".tablename('wxrun_team')." rt ON rw.tm_id = rt.id WHERE rw.uniacid=$uniacid AND rw.tm_id !=0 GROUP BY rw.tm_id ORDER BY today_step DESC ";
+        $sql = "SELECT rt.id,rt.team_name as nickname,rt.team_img as avatar,SUM(rw.today_step) as today_step FROM ".tablename('wxrun_wxrun')." rw JOIN ".tablename('wxrun_team')." rt ON rw.tm_id = rt.id WHERE rw.uniacid=$uniacid AND rw.third_id={$third['id']} AND rw.tm_id !=0 GROUP BY rw.tm_id ORDER BY today_step DESC ";
         $ranklist = pdo_fetchall($sql);
         foreach($ranklist as $k=>$v){
             if($v['id'] == $user['tm_id']){
@@ -631,7 +631,7 @@ function getRankList($uniacid,$appid){
         }
     }else if($cid == '3'){
         $sql = "SELECT rw.openid,rw.nickname,rw.avatar,rw.today_step + IF(SUM(rs.step),SUM(rs.step),0) as today_step FROM ".tablename('wxrun_wxrun')." rw left join ".tablename('wxrun_step')." rs 
-on rw.id = rs.uid WHERE rw.uniacid=6 group by rs.uid ORDER BY today_step DESC ";
+on rw.id = rs.uid WHERE rw.uniacid=6 AND third_id={$third['id']} group by rs.uid ORDER BY today_step DESC ";
         $ranklist = pdo_fetchall($sql);
         foreach($ranklist as $k=>$v){
             $v['nickname'] = base64_decode($v['nickname']);
@@ -648,7 +648,7 @@ on rw.id = rs.uid WHERE rw.uniacid=6 group by rs.uid ORDER BY today_step DESC ";
     }else if($cid == '4'){
         $team = getTeam($user['tm_id']);
 
-        $sql = "SELECT rw.tm_id,rt.id,rt.team_name as nickname,rt.team_img as avatar,SUM(rw.today_step) as today_step FROM ".tablename('wxrun_wxrun')." rw JOIN ".tablename('wxrun_team')." rt ON rw.tm_id = rt.id WHERE rw.uniacid=$uniacid AND rw.tm_id !=0 GROUP BY rw.tm_id ORDER BY today_step DESC ";
+        $sql = "SELECT rw.tm_id,rt.id,rt.team_name as nickname,rt.team_img as avatar,SUM(rw.today_step) as today_step FROM ".tablename('wxrun_wxrun')." rw JOIN ".tablename('wxrun_team')." rt ON rw.tm_id = rt.id WHERE rw.uniacid=$uniacid AND rw.third_id={$third['id']} AND rw.tm_id !=0 GROUP BY rw.tm_id ORDER BY today_step DESC ";
         $ranklist = pdo_fetchall($sql);
         foreach($ranklist as $k=>$v){
             $ranklist[$k]['today_step'] =$v['today_step'] + pdo_fetchcolumn("SELECT SUM(step) FROM ".tablename('wxrun_step')." WHERE tid=  {$v['tm_id']} AND tid != 0");
@@ -712,14 +712,13 @@ function isrank($uniacid,$appid){
     $user = getUserByOpenid($uniacid,$third['id'],$openid);
     if($user['tm_id'] == 0 || $user['realname'] == ''){
         $data = selectCompany($uniacid,$third['id'],'pid=0');
-        $all[0] = $data;
-        if(!empty($data)){
+//        $all[0] = $data;
+//        if(!empty($data)){
+//
+//            $all[1] = selectCompany($uniacid,$third['id'],"pid={$data[0]['id']}");
+//        }
 
-            $all[1] = selectCompany($uniacid,$third['id'],"pid={$data[0]['id']}");
-
-        }
-
-        die(json_encode(['code'=>'no1','msg'=>'选择所在公司','data'=>$all]));
+        die(json_encode(['code'=>'no1','msg'=>'选择所在公司','data'=>$data]));
     }
 
     $sql = "SELECT startTime,endTime FROM ".tablename('wxrun_rank')." WHERE status = 1 AND uniacid = $uniacid AND third_id = {$third['id']}";
@@ -765,7 +764,7 @@ function joinTeam($uniacid,$appid){
     }
     $user = pdo_fetch("SELECT * FROM ".tablename('wxrun_wxrun')." WHERE uniacid=$uniacid AND third_id={$third['id']} AND tm_id = $tm_id AND realname='$realname'");
     if(empty($user)){
-        $res = pdo_update('wxrun_wxrun',['tm_id'=>$tm_id,'realname'=>$realname],['openid'=>$openid,'third_id'=>$third['id']]);
+        $res = pdo_update('wxrun_wxrun',['tm_id'=>$tm_id,'realname'=>$realname,'tm_join'=>time()],['openid'=>$openid,'third_id'=>$third['id']]);
         if($res){
             die(json_encode(['code'=>'ok','msg'=>'加入公司成功']));
         }else{

@@ -14,32 +14,37 @@ Page({
         isIos:false,
         show:false,
         objectMultiArray: null,
-        multiIndex: [0, 0],
+        index:0,
+        //multiIndex: [0, 0],
         realname:'',
     },
     bindMultiPickerColumnChange: function (e) {
         // console.log(e)
         let that = this;
-        var data = {
-            objectMultiArray: this.data.objectMultiArray,
-            multiIndex: this.data.multiIndex
-        };
-        data.multiIndex[e.detail.column] = e.detail.value;
-        if (e.detail.column == 0){
-            wx.request({
-                url: config.service.requestUrl,
-                data: {
-                    a: 'selectTeam',
-                    pid: data.objectMultiArray[0][e.detail.value]['id'],
-                },
-                success: function (res) {
-                    data.objectMultiArray[1] = res.data.data
-                    data.multiIndex[1] = 0
-                    that.setData(data);
-                }
-            })
-        }
-        that.setData(data);
+        that.setData({
+            index: e.detail.value
+        })
+        
+        // var data = {
+        //     objectMultiArray: this.data.objectMultiArray,
+        //     multiIndex: this.data.multiIndex
+        // };
+        // data.multiIndex[e.detail.column] = e.detail.value;
+        // if (e.detail.column == 0){
+        //     wx.request({
+        //         url: config.service.requestUrl,
+        //         data: {
+        //             a: 'selectTeam',
+        //             pid: data.objectMultiArray[0][e.detail.value]['id'],
+        //         },
+        //         success: function (res) {
+        //             data.objectMultiArray[1] = res.data.data
+        //             data.multiIndex[1] = 0
+        //             that.setData(data);
+        //         }
+        //     })
+        // }
+        // that.setData(data);
     },
     //验证团队名称
     checkrealname: function (e) {
@@ -70,7 +75,7 @@ Page({
             url: config.service.requestUrl,
             data: {
                 a: 'joinTeam',
-                tm_id: that.data.objectMultiArray[1][that.data.multiIndex[1]]['id'],
+                tm_id: that.data.objectMultiArray[that.data.index]['id'],
                 realname:that.data.realname,
                 openid:wx.getStorageSync('openid')
             },

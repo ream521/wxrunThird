@@ -72,10 +72,10 @@
         <form class="form" bindsubmit="formSubmit" >
 
             <view class="row pd-20">
-                <picker mode="multiSelector" range-key="team_name" class='wb-100' bindcolumnchange="bindMultiPickerColumnChange" value="{{multiIndex}}" range="{{objectMultiArray}}">
+                <picker mode="selector" range-key="team_name" class='wb-100' bindchange="bindMultiPickerColumnChange" value="{{index}}" range="{{objectMultiArray}}">
                     <view class="picker">
                         
-                        <input name="company" type='text' bindchange="checkrealname" value="{{objectMultiArray[1][multiIndex[1]]['team_name']}}" class="form-input" placeholder="公司" />
+                        <input name="company" type='text' bindchange="checkrealname" value="{{objectMultiArray[index]['team_name']}}" class="form-input" placeholder="公司" />
                     
                     </view>
                 </picker>
