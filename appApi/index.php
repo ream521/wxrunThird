@@ -10,7 +10,7 @@ $appid = $_REQUEST['appid'];
 if (function_exists($act)) {
     $act($uniacid,$appid);
 } else {
-    echo json_encode(['msg'=>'方法不存在','code'=>'no'],256);die;
+    die(json_encode(['msg'=>'方法不存在','code'=>'no'],256));
 }
 
 //获取 SessionKey
@@ -437,16 +437,16 @@ function insertUser($uniacid,$appid){
         $res=pdo_insert('wxrun_wxrun',$data);
         $uid = pdo_insertid();
         if($res){
-            echo json_encode(['code'=>'ok','msg'=>'用户入库成功','data'=>['uid'=>$uid]]);die;
+            die(json_encode(['code'=>'ok','msg'=>'用户添加成功','data'=>['uid'=>$uid]]));
         }else{
-            echo json_encode(['code'=>'no','msg'=>'用户入库失败']);die;
+            die(json_encode(['code'=>'no','msg'=>'用户添加失败']));
         }
     }else{
         $res=pdo_update('wxrun_wxrun',$data,['openid'=>$data['openid'],'uniacid'=>$uniacid,'third_id'=>$third['id']]);
         if($res){
-            echo json_encode(['code'=>'ok','msg'=>'用户信息更新成功','data'=>['uid'=>$user['id']]]);die;
+            die(json_encode(['code'=>'ok','msg'=>'用户信息更新成功','data'=>['uid'=>$user['id']]]));
         }else{
-            echo json_encode(['code'=>'no','msg'=>'用户信息更新失败']);die;
+            die(json_encode(['code'=>'ok','msg'=>'用户信息更新失败','data'=>['uid'=>$user['id']]]));
         }
     }
 }

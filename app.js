@@ -15,6 +15,7 @@ App({
     },
     //登陆
     login:function(){
+        let that = this;
         // 登录
         wx.login({
             success: res => {
@@ -28,16 +29,27 @@ App({
                         },
                         dataType: "json",
                         success: function (o) {
-                            //console.log(o)
-                            wx.setStorageSync('sessionKey', o.data.sessionKey);
-                            wx.setStorageSync('openid', o.data.openid);
+                            
+                            var oo = that.strToJson(o)
+                            
+                            // console.log(oo)
+                            wx.setStorageSync('sessionKey', oo.sessionKey);
+                            wx.setStorageSync('openid', oo.openid);
                         }
                     })
                 }
             },
         })
     },
-    
+    strToJson:function(o){
+        let oo;
+        if (wx.getStorageSync('platform') == 'devtools' || wx.getStorageSync('platform') == 'ios') {
+            oo = o.data;//工具用
+        } else {
+            oo = JSON.parse(o.data.trim());//线上用
+        }
+        return oo;
+    },
     globalData: {
         userInfo: null,
     }

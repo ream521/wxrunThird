@@ -2,7 +2,7 @@
 const config = require('../../config.js')
 const wxCharts = require('../../utils/wxcharts.js');
 var lineChart = null;
-
+const app = getApp()
 Page({
 
     /**
@@ -130,16 +130,17 @@ Page({
             data: { a: 'getRankList', cid: cid, openid:wx.getStorageSync('openid') },
             success: function (res) {
                 // console.log(res);
+                let o = app.strToJson(res)
                 that.setData({
-                    rank: res.data.data.rank,
-                    rankList: res.data.data.ranklist,
+                    rank: o.data.rank,
+                    rankList: o.data.ranklist,
                     //tmid: res.data.data.rank.id ? res.data.data.rank.id :0,
                     isDetail: false,
-                    chartList: res.data.data.charts,
+                    chartList: o.data.charts,
                 });
                 if (res.data.code == 'no'){
                     wx.showToast({
-                        title: res.data.msg,
+                        title: o.msg,
                         icon: 'none',
                         duration: 2000
                     })

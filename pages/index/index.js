@@ -125,8 +125,7 @@ Page({
                 wx.setStorageSync('screenWidth', res.screenWidth);
             }
         })
-        //获取微信运动步数
-        that.getWxRunStep();
+        
         //获取广告
         that.getAds();
         
@@ -137,9 +136,8 @@ Page({
        
     },
     onReady: function (e) {
-       
-        this.canvasArc();
-       
+        //获取微信运动步数
+        this.getWxRunStep();
     },
     //关联索取和赠送
     linkGiftLog(option) {
@@ -173,7 +171,7 @@ Page({
         var that = this;
         wx.getWeRunData({
             success(res) {
-                //console.log(res)
+                // console.log(res)
                 wx.request({
                     url: config.service.requestUrl,
                     data: {
@@ -184,21 +182,19 @@ Page({
                         openid: wx.getStorageSync('openid')
                     },
                     success: function (o) {
-                        //console.log(o)
-                        var oo;
+                        // console.log(o)
+                        var oo = app.strToJson(o);
                         if (wx.getStorageSync('platform') == 'devtools' || wx.getStorageSync('platform') == 'ios') {
-                            oo = o.data;//工具用
+                            
                             that.setData({
                                 isIos: true,
                                 yibiaopan: true,
                             })
-                        } else {
-                            oo = JSON.parse(o.data.trim());//线上用
-                        }
+                        } 
 
                         //获取当天的步数
                         wx.setStorageSync('wx_step', oo.stepInfoList[30].step);
-                        //console.log(oo)
+                        // console.log(oo)
                         that.setData({
                             wxrun: oo.stepInfoList[30].step
                         });
@@ -208,6 +204,9 @@ Page({
                     }
                 })
             },
+            fail(ret){
+                console.log(ret)
+            }
         })
     },
     //获取福字
@@ -246,10 +245,11 @@ Page({
             url: config.service.requestUrl,
             data: { a: 'getAds' },
             success: function (res) {
-                //console.log(res)
-                wx.setStorageSync('zi_rid', res.data[0].rid);
+                // console.log(res)
+                var oo = app.strToJson(res);
+                wx.setStorageSync('zi_rid', oo[0].rid);
                 that.setData({
-                    ads: res.data,
+                    ads: oo,
                 })
             }
         })
@@ -276,10 +276,7 @@ Page({
 
         context.draw()
     },
-    //动画
-    animationArc: function () {
 
-    },
     //捐步
     giveStep: function () {
         var that = this;
@@ -297,7 +294,7 @@ Page({
     },
     //跳转
     redirectTo: function (e) {
-        //console.log(e);
+        // console.log(e);
         wx.navigateTo({
             url: e.target.dataset.link,
         })
@@ -378,7 +375,7 @@ Page({
             url: config.service.requestUrl,
             data: { a: 'syncStep', openid: wx.getStorageSync('openid'), step: JSON.stringify(step) },
             success: function (res) {
-                //console.log(res)
+                // console.log(res)
             }
         })
     },
@@ -396,20 +393,20 @@ Page({
             url: config.service.requestUrl,
             data: { a: 'isrank',openid: wx.getStorageSync('openid')},
             success: function (res) {
-                //console.log(res)
-                if (res.data.code == 'ok') {
+                let o = app.strToJson(res)
+                if (o.code == 'ok') {
                     wx.navigateTo({
-                        url: '../rank/rank?cid=2&istm='+res.data.data,
+                        url: '../rank/rank?cid=2&istm=' + o.data,
                     })
-                } else if (res.data.code == 'no1'){
+                } else if (o.code == 'no1'){
                     
                     that.setData({
                         show:true,
-                        objectMultiArray:res.data.data,
+                        objectMultiArray: o.data,
                     })
                 } else {
                     wx.showToast({
-                        title: res.data.msg,
+                        title: o.msg,
                         icon: 'none',
                         duration: 2000
                     })
@@ -429,10 +426,12 @@ Page({
                 nickname: user.nickName
             },
             success: function (res) {
+                let oo = app.strToJson(res);
+                // console.log(oo, user);
                 if (res.data.code == 'no') {
                     //that.insertUser(user);
                 } else {
-                    wx.setStorageSync('uid', res.data.data.uid)
+                    wx.setStorageSync('uid', oo.uid)
                 }
             }
         })

@@ -1,7 +1,7 @@
 //badge.js
 const util = require('../../utils/util.js')
 const config = require('../../config.js')
-
+const app = getApp()
 Page({
     data: {
         bg_img: '',
@@ -153,14 +153,14 @@ Page({
             url: config.service.requestUrl,
             data: { a: 'getIsCollect', rid: wx.getStorageSync('rid'), openid: wx.getStorageSync('openid') },
             success: function (res) {
-                
-                wx.setStorageSync('isCollect', res.data.code);
-                if (res.data.code == 'ok') {
+                let o = app.strToJson(res);
+                wx.setStorageSync('isCollect', o.code);
+                if (o.code == 'ok') {
                     that.setData({
                         iscollect: true,
-                        gift_bgimg: res.data.gift_bgimg
+                        gift_bgimg: o.gift_bgimg
                     })
-                    wx.setStorageSync('giftType', res.data.gifttype);
+                    wx.setStorageSync('giftType', o.gifttype);
                 }else{
                     that.setData({
                         iscollect: false,
@@ -177,14 +177,16 @@ Page({
             url: config.service.requestUrl,
             data: { a: 'getGiftRes', rid: wx.getStorageSync('rid') },
             success: function (res) {
+                let o = app.strToJson(res)
+                // console.log(o)
                 that.setData({
-                    count: res.data.total,
-                    keywords: res.data.keywords,
+                    count: o.total,
+                    keywords: o.keywords,
                     
                 });
-                if (res.data.length > 0) {
+                if (o.length > 0) {
                     that.setData({
-                        allres: res.data.giftList,
+                        allres: o.giftList,
                     })
                 }
             }
@@ -213,18 +215,19 @@ Page({
             url: config.service.requestUrl,
             data: { a: 'getActDetail', rid: wx.getStorageSync('rid') },
             success: function (res) {
-                console.log(res)
+                let o = app.strToJson(res);
+                // console.log(o)
                 that.setData({
-                    bg_img: res.data.img,
-                    givebtnl: res.data.givebtncolorl,
-                    givebtnr: res.data.givebtncolorr,
-                    getbtnl: res.data.getbtncolorl,
-                    getbtnr: res.data.getbtncolorr,
-                    smallbdc: res.data.smallbdcolor,
-                    inputc: res.data.inputcolor,
-                    actTime: res.data.startTime + " - " + res.data.endTime,
-                    actContent: res.data.content,
-                    giftContent: res.data.giftContent,
+                    bg_img: o.img,
+                    givebtnl: o.givebtncolorl,
+                    givebtnr: o.givebtncolorr,
+                    getbtnl: o.getbtncolorl,
+                    getbtnr: o.getbtncolorr,
+                    smallbdc: o.smallbdcolor,
+                    inputc: o.inputcolor,
+                    actTime: o.startTime + " - " + o.endTime,
+                    actContent: o.content,
+                    giftContent: o.giftContent,
                 })
             }
         })
@@ -237,9 +240,9 @@ Page({
             url: config.service.requestUrl,
             data: { a: 'getUserFuzi', rid: wx.getStorageSync('rid'), openid: wx.getStorageSync('openid') },
             success: function (res) {
-                //console.log(res)
+                let o = app.strToJson(res)
                 that.setData({
-                    all: res.data,
+                    all: o,
                 })
             }
         })
