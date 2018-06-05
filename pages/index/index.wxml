@@ -2,16 +2,16 @@
 <view class="container">
 
   <view class="userinfo">
-
+   
     <canvas class="yibiaopan" hidden="{{yibiaopan}}" canvas-id="firstCanvas"></canvas>
     <view class="yibiaopan" wx:if="{{yibiaopan}}"></view>
 
     <view class="run-step">
       <view class="wx-run ">{{wxrun}} 步</view>
-      <button wx:if="{{wxrun >= 100000}}" class="btn-cjb " bindtap="giveStep">捐步</button>
-      <button wx:else class="btn-jb ">捐步</button>
+      <!-- <button wx:if="{{wxrun >= 100000}}" class="btn-cjb " bindtap="giveStep">捐步</button> -->
+      <button class="btn-cjb " bindtap='catJoinLv'>参与率</button>
     </view>
-    <view class="wx-msg">满5000步可捐步</view>
+    <!-- <view class="wx-msg">满5000步可捐步</view> -->
 
     <view class="content">
       <view class="c-left" bindtap="personRank">
@@ -54,7 +54,7 @@
   </view>
 </view>
 
-<view class="modal-mask" catchtouchmove="preventTouchMove" wx:if="{{isIos}}"></view>
+ <view class="modal-mask" catchtouchmove="preventTouchMove" wx:if="{{isIos}}"></view>
 
 <view class="modal-dialog" wx:if="{{isIos}}">
     <view class="modal-close" bindtap="close">×</view>
@@ -62,7 +62,7 @@
        <view class="tips"> 温馨提示：</view>
        请确保开启“<text class="tips">健康</text>”app 和“<text class="tips">微信运动</text>”
     </view>
-</view>
+</view> 
 
 <view class="modal-mask" catchtouchmove="preventTouchMove" wx:if="{{show}}"></view>
 
@@ -71,21 +71,33 @@
     <view class="bg-tip">
         <form class="form" bindsubmit="formSubmit" >
 
+            <view >注册新会员</view>
             <view class="row pd-20">
                 <picker mode="selector" range-key="team_name" class='wb-100' bindchange="bindMultiPickerColumnChange" value="{{index}}" range="{{objectMultiArray}}">
                     <view class="picker">
-                        
-                        <input name="company" type='text' bindchange="checkrealname" value="{{objectMultiArray[index]['team_name']}}" class="form-input" placeholder="公司" />
+                        <view class="form-input">{{objectMultiArray[index]['team_name']}}</view>
+                        <!-- <input name="company" type='text' value="{{objectMultiArray[index]['team_name']}}" class="form-input" placeholder="公司" /> -->
                     
                     </view>
                 </picker>
             </view>
 
             <view class='row'>
-                <input name="realname" type='text' bindchange="checkrealname" class="form-input" placeholder="姓名" /> 
+                <input name="realname" type='text' bindchange="checkrealname" class="form-input" placeholder="请输入姓名" /> 
+            </view>
+             <view class='row'>
+                <input name="phone" type='text' bindchange="checkphone" class="form-input" placeholder="请输入手机号" /> 
             </view>
             
-            <button class="btn btn-default" form-type="submit">立即加入</button>
+            <button class="btn btn-default" form-type="submit">立即注册</button>
         </form>
+    </view>
+</view>   
+
+<view class="modal-mask" catchtouchmove="preventTouchMove" wx:if="{{auth}}"></view>
+
+<view class="modal-dialog" style='margin-top:35%;' wx:if="{{auth}}">
+    <view class="bg-tip">
+        <button wx:if="{{canIUse}}" open-type="getUserInfo" style="background:#25C400;color:#fff;font-weigh:700;" bindgetuserinfo="getUserInfo">授权登录</button>
     </view>
 </view>

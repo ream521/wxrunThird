@@ -2,7 +2,8 @@
   "pages": [
     "pages/index/index",
     "pages/badge/badge",
-    "pages/rank/rank"
+    "pages/rank/rank",
+    "pages/joinlv/joinlv"
   ],
   "window": {
     "backgroundTextStyle": "light",

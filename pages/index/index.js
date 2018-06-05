@@ -17,6 +17,10 @@ Page({
         index:0,
         //multiIndex: [0, 0],
         realname:'',
+        phone:'',
+        auth:false,
+        canIUse: wx.canIUse('button.open-type.getUserInfo'),
+        opData:null,
     },
     bindMultiPickerColumnChange: function (e) {
         // console.log(e)
@@ -46,7 +50,7 @@ Page({
         // }
         // that.setData(data);
     },
-    //验证团队名称
+    //验证姓名
     checkrealname: function (e) {
         let that = this;
         if (e.detail.value == '') {
@@ -55,17 +59,48 @@ Page({
                 icon: 'none',
                 duration: 2000
             })
+            return false;
         }
         that.setData({
             realname: e.detail.value
         })
     },
+    checkphone: function (e) {
+        let that = this;
+        if (e.detail.value == '') {
+            wx.showToast({
+                title: '手机号不能为空',
+                icon: 'none',
+                duration: 2000
+            })
+            return false;
+        }
+        that.setData({
+            phone: e.detail.value
+        })
+    },
     //提交
     formSubmit: function (e) {
         let that = this;
+        if (that.data.index == 0) {
+            wx.showToast({
+                title: '请选择公司',
+                icon: 'none',
+                duration: 2000
+            })
+            return false;
+        }
         if (that.data.realname == '') {
             wx.showToast({
                 title: '姓名不能为空',
+                icon: 'none',
+                duration: 2000
+            })
+            return false;
+        }
+        if (that.data.phone == '') {
+            wx.showToast({
+                title: '手机号不能为空',
                 icon: 'none',
                 duration: 2000
             })
@@ -77,16 +112,18 @@ Page({
                 a: 'joinTeam',
                 tm_id: that.data.objectMultiArray[that.data.index]['id'],
                 realname:that.data.realname,
+                phone:that.data.phone,
                 openid:wx.getStorageSync('openid')
             },
             success: function (res) {
                 // console.log(res)
+                let o = app.strToJson(res);
                 wx.showToast({
-                    title: res.data.msg,
+                    title: o.msg,
                     icon: 'none',
                     duration: 2000
                 })
-                if(res.data.code == 'ok'){
+                if (o.code == 'ok'){
                     that.closeForm();
                 }
             }
@@ -96,28 +133,12 @@ Page({
     closeForm: function () {
         this.setData({
             show: false,
+            yibiaopan: false,
         })
     },
     onLoad: function (option) {
         var that = this;
-        if (app.globalData.userInfo) {
-            that.insertUser(app.globalData.userInfo);
-        } else if (this.data.canIUse) {
-            // 由于 getUserInfo 是网络请求，可能会在 Page.onLoad 之后才返回
-            // 所以此处加入 callback 以防止这种情况
-            app.userInfoReadyCallback = res => {
-                that.insertUser(app.globalData.userInfo);
-            }
-        } else {
-            // 在没有 open-type=getUserInfo 版本的兼容处理
-            wx.getUserInfo({
-                success: res => {
-                    app.globalData.userInfo = res.userInfo
-                    that.insertUser(app.globalData.userInfo);
-                }
-            })
-        }
-        
+
         wx.setNavigationBarTitle({ title: '微信运动' })
         wx.getSystemInfo({
             success: function (res) {
@@ -125,22 +146,43 @@ Page({
                 wx.setStorageSync('screenWidth', res.screenWidth);
             }
         })
-        
+        // if (app.globalData.userInfo) {
+        //     console.log(1)
+        //     // console.log(app.globalData.userInfo)
+        //     that.insertUser(app.globalData.userInfo);
+        // } else if (this.data.canIUse) {
+        //     console.log(2)
+        //     // 由于 getUserInfo 是网络请求，可能会在 Page.onLoad 之后才返回
+        //     // 所以此处加入 callback 以防止这种情况
+        //     app.userInfoReadyCallback = res => {
+        //         that.insertUser(res.userInfo);
+        //     }
+        // } else {
+        //     console.log(3)
+        //     // 在没有 open-type=getUserInfo 版本的兼容处理
+        //     wx.getUserInfo({
+        //         success: res => {
+        //             app.globalData.userInfo = res.userInfo;
+        //             that.insertUser(res.userInfo);
+        //         }
+        //     })
+        // }
         //获取广告
         that.getAds();
-        
-        if (option.uid != undefined && option.logtype != undefined && option.rid != undefined && option.keyword != undefined) {
-            //索取或赠送
-            that.linkGiftLog(option);//关联索取和赠送
-        }
-       
+        that.getUid();
+        that.setData({
+            opData:option,
+        })
     },
     onReady: function (e) {
         //获取微信运动步数
+        
         this.getWxRunStep();
+
     },
     //关联索取和赠送
     linkGiftLog(option) {
+        
         var that = this;
         wx.request({
             url: config.service.requestUrl,
@@ -153,7 +195,8 @@ Page({
                 keyword: option.keyword 
             },
             success: function (res) {
-                if (res.data.code == 'ok' && res.data.logtype == '1') {
+                var oo = app.strToJson(res);
+                if (oo.data.code == 'ok' && oo.data.logtype == '1') {
                     wx.showToast({
                         title: option.keyword + '字存入账号',
                         icon: 'success',
@@ -164,7 +207,31 @@ Page({
             }
         })
     },
-    
+    getUid:function(){
+        var that = this;
+        wx.request({
+            url: config.service.requestUrl,
+            data: {
+                a: 'getUid',
+                openid: wx.getStorageSync('openid'), 
+            },
+            success: function (res) {
+                var oo = app.strToJson(res);
+                if(oo.data.uid == 0){
+                    that.setData({
+                        auth:true,
+                    })
+                }else{
+                    wx.setStorageSync('uid', oo.data.uid);
+                    if (that.data.opData.uid != undefined && that.data.opData.logtype != undefined && that.data.opData.rid != undefined && that.data.opData.keyword != undefined) {
+                        //索取或赠送
+                        that.linkGiftLog(that.data.opData);//关联索取和赠送
+                    }
+
+                }
+            }
+        })
+    },
     //获取微信运动步数
     getWxRunStep: function () {
         //微信步数 
@@ -191,21 +258,26 @@ Page({
                                 yibiaopan: true,
                             })
                         } 
-
+                        // console.log(oo)
                         //获取当天的步数
                         wx.setStorageSync('wx_step', oo.stepInfoList[30].step);
-                        // console.log(oo)
+                        wx.setStorageSync('wx_steplist', oo.stepInfoList);
+                        
                         that.setData({
                             wxrun: oo.stepInfoList[30].step
                         });
                         that.canvasArc();
-                        that.syncStep(oo.stepInfoList);
                         that.getFuZi(oo.stepInfoList[30].step);
                     }
                 })
             },
             fail(ret){
                 console.log(ret)
+                wx.showToast({
+                    title: ret.errMsg,
+                    icon:'none',
+                    duration: 2000
+                })
             }
         })
     },
@@ -402,6 +474,7 @@ Page({
                     
                     that.setData({
                         show:true,
+                        yibiaopan: true,
                         objectMultiArray: o.data,
                     })
                 } else {
@@ -414,6 +487,11 @@ Page({
             }
         })
     },
+    //获取用户信息
+    getUserInfo:function(e){
+
+        this.insertUser(e.detail.userInfo);
+    },
     //用户信息入库
     insertUser: function (user) {
         var that = this;
@@ -421,20 +499,28 @@ Page({
             url: config.service.requestUrl,
             data: { 
                 a: 'insertUser', 
-                openid: wx.getStorageSync('openid'), 
+                openid: wx.getStorageSync('openid'),
                 avatar: user.avatarUrl,
                 nickname: user.nickName
             },
             success: function (res) {
                 let oo = app.strToJson(res);
-                // console.log(oo, user);
-                if (res.data.code == 'no') {
-                    //that.insertUser(user);
-                } else {
-                    wx.setStorageSync('uid', oo.uid)
+                that.getUid();
+                if(oo.code == 'ok'){
+                    that.setData({
+                        auth:false,
+                    })
                 }
+                that.syncStep(wx.getStorageSync('wx_steplist'));
             }
         })
     }, 
+    //参与率
+    catJoinLv:function(){
+        var that = this;
+        wx.navigateTo({
+            url: '../joinlv/joinlv',
+        })
+    }
     
 })

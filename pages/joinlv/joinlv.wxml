@@ -1,0 +1,12 @@
+<!--pages/rank/rank.wxml-->
+<view class="container">   
+    <view class="content">
+        <view class="row" wx:for="{{rankList}}" wx:for-index="id" wx:for-item="item" wx:key="key" bindtap="teamDetail" id="{{item.id}}">
+           <text class="rank">{{id+1}}</text>
+           <image class="img" src="{{item.img}}"></image>
+           <text class="nickname">{{item.company}}</text>
+           <view class="step">{{item.lv}}<text class="unit">%</text></view>
+        </view>
+    </view>
+
+</view>

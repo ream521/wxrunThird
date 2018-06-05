@@ -95,7 +95,7 @@ function getRandChar($uniacid,$appid){
 
     $user=getUserByOpenid($uniacid,$third['id'],$openid);
 
-    $sql="SELECT * FROM ".tablename('wxrun_activity')." WHERE find_in_set('".$wrid."',user_ids) ";
+    $sql="SELECT * FROM ".tablename('wxrun_activity')." WHERE find_in_set('".$wrid."',user_ids) AND third_id = {$third['id']}";
     $ret=pdo_fetch($sql);//是否之前抽到过
 
     $res=getRandFuZi($stepsetting,$total,$count,$currenttotal,$facttotal,$ret);
@@ -104,7 +104,7 @@ function getRandChar($uniacid,$appid){
         $stepsetting['keyword2'],
         $stepsetting['keyword3'],
         $stepsetting['keyword4'],
-        $stepsetting['keyword5'],
+//        $stepsetting['keyword5'],
     ];
     $data=[];
     foreach($res as $k=>$v){
@@ -120,13 +120,13 @@ function getRandChar($uniacid,$appid){
         pdo_insert('wxrun_gift',$insert);
         //更新user_ids
         if($stepsetting['keyword'][0]==$v){
-            $sql="SELECT user_ids FROM ".tablename('wxrun_activity')." WHERE id=$rid";
+            $sql="SELECT user_ids FROM ".tablename('wxrun_activity')." WHERE id=$rid AND third_id = {$third['id']}";
             $user_ids=pdo_fetchcolumn($sql);
             if(empty($user_ids)){
-                $sql="UPDATE ".tablename('wxrun_activity')." SET user_ids=$wrid WHERE id=$rid";
+                $sql="UPDATE ".tablename('wxrun_activity')." SET user_ids=$wrid WHERE id=$rid AND third_id = {$third['id']}";
             }else{
                 $user_ids.=",".$wrid;
-                $sql="UPDATE ".tablename('wxrun_activity')." SET user_ids=$user_ids WHERE id=$rid";
+                $sql="UPDATE ".tablename('wxrun_activity')." SET user_ids=$user_ids WHERE id=$rid AND third_id = {$third['id']}";
             }
             pdo_query($sql);
         }
@@ -140,7 +140,7 @@ function getRandChar($uniacid,$appid){
 function getActDetail($uniacid,$appid){
     $rid=$_REQUEST['rid'];
     $third = getThird($uniacid,$appid);
-    $sql="SELECT * FROM ".tablename('wxrun_activity')." WHERE uniacid=$uniacid AND third_id = {$third['id']} AND id=$rid";
+    $sql="SELECT *,concat(keyword1,keyword2,keyword3,keyword4) as keywords FROM ".tablename('wxrun_activity')." WHERE uniacid=$uniacid AND third_id = {$third['id']} AND id=$rid";
     $res=pdo_fetch($sql);
     $res['startTime']=date('Y-m-d H:i:s',$res['startTime']);
     $res['endTime']=date('Y-m-d H:i:s',$res['endTime']);
@@ -162,17 +162,31 @@ function getGiftRes($uniacid,$appid){
     $rid=$_REQUEST['rid'];
     $third = getThird($uniacid,$appid);
 
-    $sql="SELECT concat(keyword1,keyword2,keyword3,keyword4,keyword5) FROM ".tablename('wxrun_activity')." WHERE uniacid=$uniacid AND third_id = {$third['id']} AND id=$rid";
-    $keywords=pdo_fetchcolumn($sql);
+//    $sql="SELECT rgs.*,rw.openid,rw.unionid,rw.avatar,rw.nickname FROM ".tablename('wxrun_gift_res')." as rgs left join ".tablename('wxrun_wxrun')." as rw on rgs.wrid=rw.id  WHERE rgs.rid=$rid AND rw.third_id= {$third['id']} ORDER BY rgs.createTime DESC ";
+//    $data = pdo_fetchall($sql);
+//    foreach($data as $k=>$v){
+//        $data[$k]['nickname']=base64_decode($v['nickname']);
+//    }
 
-    $sql="SELECT rgs.*,rw.openid,rw.unionid,rw.avatar,rw.nickname FROM ".tablename('wxrun_gift_res')." as rgs left join ".tablename('wxrun_wxrun')." as rw on rgs.wrid=rw.id  WHERE rgs.rid=$rid AND rw.third_id= {$third['id']} ORDER BY rgs.createTime DESC ";
-
-    $data = pdo_fetchall($sql);
-    foreach($data as $k=>$v){
-        $data[$k]['nickname']=base64_decode($v['nickname']);
+    $sql = "SELECT id,nickname,avatar,openid FROM ".tablename('wxrun_wxrun')." WHERE uniacid=$uniacid AND third_id= {$third['id']} GROUP BY id ORDER BY addTime DESC";
+    $users = pdo_fetchall($sql);
+    $total = 0;
+    foreach($users as $v){
+        $sql="SELECT rg.keyword,count(*) as num,rw.id FROM ".tablename('wxrun_gift')." as rg LEFT JOIN ".tablename('wxrun_wxrun').
+            " as rw on rg.wrid=rw.id WHERE rw.openid='{$v['openid']}' AND rg.rid=$rid AND rg.type!=0 AND rw.third_id={$third['id']} GROUP BY keyword";
+        $res=pdo_fetchall($sql);
+        $count=count($res);
+        if($count == 4){
+            $data[]=[
+                'avatar'=>$v['avatar'],
+                'nickname'=>base64_decode($v['nickname']),
+                'title'=>'兑换奖品请联系活动方'
+            ];
+            $total++;
+        }
     }
 
-    $res = ['total'=>count($data),'keywords'=>$keywords,'giftList'=>$data];
+    $res = ['total'=>$total,'giftList'=>$data];
     echo json_encode($res);die;
 }
 //兑换奖品
@@ -262,7 +276,7 @@ function getIsCollect($uniacid,$appid){
         " as rw on rg.wrid=rw.id WHERE rw.openid='$openid' AND rg.rid=$rid AND rg.type!=0 AND rw.third_id={$third['id']} GROUP BY keyword";
     $res=pdo_fetchall($sql);
     $count=count($res);
-    if($count==5){
+    if($count==4){
         //集齐的话查看活动奖励类型
         $sql="SELECT giftType,gift_bgimg,endTime FROM ".tablename('wxrun_activity')." WHERE id=$rid";
         $gift=pdo_fetch($sql);
@@ -341,7 +355,7 @@ function getUserFuzi($uniacid,$appid){
         $activity['keyword2'],
         $activity['keyword3'],
         $activity['keyword4'],
-        $activity['keyword5'],
+//        $activity['keyword5'],
     ];
     $data=[];
 
@@ -363,13 +377,13 @@ function getUserFuzi($uniacid,$appid){
     echo json_encode($data);die;
 }
 //赠送给好友
-function giveFrind($uniacid){
+function giveFrind($uniacid,$appid){
     //$unionid=$_REQUEST['unionid'];
     $openid=$_REQUEST['openid'];
     $rid=$_REQUEST['rid'];
     $keyword=$_REQUEST['keyword'];
-
-    $user=getUserByOpenid($uniacid,$openid);
+    $third = getThird($uniacid,$appid);
+    $user=getUserByOpenid($uniacid,$third['id'],$openid);
     if(empty($user)){
         echo json_encode(['code'=>'no','msg'=>'非法请求']);die;
     }
@@ -381,14 +395,14 @@ function giveFrind($uniacid){
     pdo_query("UPDATE ".tablename('wxrun_gift')." SET type=2 WHERE id={$gift['id']}");
     $data=[
         'rid'=>$rid,
-        'fromuid'=>$user['id'],//todo 如何获取索取人的id? //谁点算谁，才生成
+        'fromuid'=>$user['id'],// 如何获取索取人的id? //谁点算谁，才生成
         'touid'=>0,
         'type'=>1,
         'title'=>"赠送给你一枚“".$keyword."”字徽章",
         'keyword'=>$keyword,
         'createTime'=>time(),
     ];
-    pdo_insert('run_gift_log',$data);
+    pdo_insert('wxrun_gift_log',$data);
     $id=pdo_insertid();
     echo json_encode(['code'=>'ok','data'=>$id]);die;
 }
@@ -411,7 +425,7 @@ function getFrind($uniacid,$appid){
         'keyword'=>$keyword,
         'createTime'=>time(),
     ];
-    pdo_insert('run_gift_log',$data);
+    pdo_insert('wxrun_gift_log',$data);
     $id=pdo_insertid();
     echo json_encode(['code'=>'ok','data'=>$id]);die;
 }
@@ -419,7 +433,7 @@ function getFrind($uniacid,$appid){
 function delLogByid(){
     $logid=$_REQUEST['logid'];
 
-    pdo_delete('run_gift_log',['id'=>$logid]);
+    pdo_delete('wxrun_gift_log',['id'=>$logid]);
     echo json_encode(['code'=>'ok']);die;
 
 }
@@ -435,11 +449,11 @@ function insertUser($uniacid,$appid){
         $data['third_id']=$third['id'];
         $data['addTime']=time();
         $res=pdo_insert('wxrun_wxrun',$data);
-        $uid = pdo_insertid();
+        $user=getUserByOpenid($uniacid,$third['id'],$data['openid']);
         if($res){
-            die(json_encode(['code'=>'ok','msg'=>'用户添加成功','data'=>['uid'=>$uid]]));
+            die(json_encode(['code'=>'ok','msg'=>'用户添加成功','data'=>['uid'=>$user['id']]]));
         }else{
-            die(json_encode(['code'=>'no','msg'=>'用户添加失败']));
+            die(json_encode(['code'=>'no','msg'=>'用户添加失败','data'=>['uid'=>$user['id']]]));
         }
     }else{
         $res=pdo_update('wxrun_wxrun',$data,['openid'=>$data['openid'],'uniacid'=>$uniacid,'third_id'=>$third['id']]);
@@ -452,6 +466,7 @@ function insertUser($uniacid,$appid){
 }
 //获取该公众号下的用户信息
 function getUserByOpenid($uniacid,$third_id,$openid){
+    //pdo_delete('wxrun_wxrun', ['openid'=>'']);
     $sql="SELECT * FROM ".tablename('wxrun_wxrun')." WHERE uniacid=$uniacid AND openid='$openid' AND third_id=$third_id";
     $user=pdo_fetch($sql);
     return $user;
@@ -465,7 +480,7 @@ function getRandFuZi($stepsetting,$total,$count,$currenttotal,$facttotal,$ret){
         $stepsetting['keyword2'],
         $stepsetting['keyword3'],
         $stepsetting['keyword4'],
-        $stepsetting['keyword5'],
+//        $stepsetting['keyword5'],
     ];
     $index=array_search($stepsetting['keyword'][0],$keywords);//获取特殊字的索引
     array_splice($keywords, $index, 1);//删除特殊字并重新建立索引
@@ -474,19 +489,18 @@ function getRandFuZi($stepsetting,$total,$count,$currenttotal,$facttotal,$ret){
 
     for($i=$count;$i<$total;$i++){
         if($i == 0 || !empty($ret)){//
-
-            $cankeywords[]=$keywords[rand(0,3)];
+            $cankeywords[]=$keywords[rand(0,2)];
         }else{
-            $j=rand(1,5);
+            $j=rand(1,4);
             if($j != 1){
-                $cankeywords[]=$keywords[rand(0,3)];//其他字
+                $cankeywords[]=$keywords[rand(0,2)];//其他字
             }else{
                 $plan=$stepsetting['keyword'][1] / $currenttotal;//计划比例
                 $fact=$facttotal / $currenttotal;//实际比例
                 if($fact < $plan){
                     $cankeywords[]=$stepsetting['keyword'][0];//特殊字
                 }else{
-                    $cankeywords[]=$keywords[rand(0,3)];//其他字
+                    $cankeywords[]=$keywords[rand(0,2)];//其他字
                 }
             }
         }
@@ -559,13 +573,13 @@ function syncStep($uniacid,$appid){
     if(date("Y-m-d",$user['lastTime']) != date("Y-m-d",time())){
         pdo_update('wxrun_wxrun',['today_step'=>0,'lastTime'=>time()]);//所有人的当天步数置0
     }
+    $data['today_step'] = $steps[30]['step'];
+    $res = pdo_update('wxrun_wxrun',$data,['id'=>$user['id']]);
     $time = time();
     $rank = pdo_fetch("SELECT id,startTime,endTime FROM ".tablename('wxrun_rank')." WHERE uniacid = $uniacid AND status=1 AND third_id={$third['id']} AND startTime <= $time AND endTime >= $time");
     if(empty($rank)){
         die(json_encode(['code'=>'no','msg'=>'活动未开启','data'=>$rank]));
     }
-    $data['today_step'] = $steps[30]['step'];
-    $res = pdo_update('wxrun_wxrun',$data,['id'=>$user['id']]);
     unset($steps[30]);//去掉当天的步数
     foreach ($steps as $v){
         if($v['timestamp'] < strtotime(date("Y-m-d",$rank['startTime'])) || $v['timestamp'] > strtotime(date("Y-m-d",$rank['endTime']))){
@@ -581,6 +595,7 @@ function syncStep($uniacid,$appid){
             $tid = 0;
         }
         $step = [
+            'third_id'=>$third['id'],
             'uid'=>$user['id'],
             'tid'=>$tid,
             'rid'=>$rank['id'],
@@ -591,6 +606,17 @@ function syncStep($uniacid,$appid){
         pdo_insert('wxrun_step',$step);
     }
     die(json_encode(['code'=>'ok','msg'=>'同步成功']));
+}
+//获取uid
+function getUid($uniacid,$appid){
+    $openid=$_REQUEST['openid'];
+    $third = getThird($uniacid,$appid);
+    $user = getUserByOpenid($uniacid,$third['id'],$openid);
+    if(!empty($user)){
+        die(json_encode(['code'=>'ok','msg'=>'同步成功','data'=>['uid'=>$user['id']]]));
+    }else{
+        die(json_encode(['code'=>'no','msg'=>'用户同步失败','data'=>['uid'=>0]]));
+    }
 }
 //排行榜
 function getRankList($uniacid,$appid){
@@ -631,7 +657,7 @@ function getRankList($uniacid,$appid){
         }
     }else if($cid == '3'){
         $sql = "SELECT rw.openid,rw.nickname,rw.avatar,rw.today_step + IF(SUM(rs.step),SUM(rs.step),0) as today_step FROM ".tablename('wxrun_wxrun')." rw left join ".tablename('wxrun_step')." rs 
-on rw.id = rs.uid WHERE rw.uniacid=6 AND third_id={$third['id']} group by rs.uid ORDER BY today_step DESC ";
+on rw.id = rs.uid WHERE rw.uniacid=$uniacid AND rw.third_id={$third['id']} group by rw.id ORDER BY today_step DESC ";
         $ranklist = pdo_fetchall($sql);
         foreach($ranklist as $k=>$v){
             $v['nickname'] = base64_decode($v['nickname']);
@@ -712,12 +738,7 @@ function isrank($uniacid,$appid){
     $user = getUserByOpenid($uniacid,$third['id'],$openid);
     if($user['tm_id'] == 0 || $user['realname'] == ''){
         $data = selectCompany($uniacid,$third['id'],'pid=0');
-//        $all[0] = $data;
-//        if(!empty($data)){
-//
-//            $all[1] = selectCompany($uniacid,$third['id'],"pid={$data[0]['id']}");
-//        }
-
+        array_unshift($data,['id'=>0,'team_name'=>'请选择所属公司']);
         die(json_encode(['code'=>'no1','msg'=>'选择所在公司','data'=>$data]));
     }
 
@@ -737,7 +758,7 @@ function isrank($uniacid,$appid){
     }
     die(json_encode(['code'=>'ok','msg'=>'活动进行中','data'=>$data]));
 }
-//公司选择
+//二级公司选择
 function selectTeam($uniacid,$appid){
     $third = getThird($uniacid,$appid);
     $pid = $_REQUEST['pid'];
@@ -756,22 +777,39 @@ function joinTeam($uniacid,$appid){
 
     $tm_id = trim($_REQUEST['tm_id']);
     $realname = trim($_REQUEST['realname']);
+    $phone = trim($_REQUEST['phone']);
     $openid=$_REQUEST['openid'];
+
+    if(!preg_match('/^1\d{10}$/',$phone)){
+        die(json_encode(['code'=>'no','msg'=>'手机格式不正确']));
+    }
 
     $team=pdo_fetch("SELECT team_name FROM ".tablename('wxrun_team')." WHERE id='$tm_id' AND uniacid=$uniacid AND third_id={$third['id']}");
     if(empty($team)){
         die(json_encode(['code'=>'no','msg'=>'公司已解散']));
     }
-    $user = pdo_fetch("SELECT * FROM ".tablename('wxrun_wxrun')." WHERE uniacid=$uniacid AND third_id={$third['id']} AND tm_id = $tm_id AND realname='$realname'");
+    $chk = pdo_fetchall("SELECT * FROM ".tablename('wxrun_chk')." WHERE realname='{$realname}' AND company='{$team['team_name']}'");
+    $where = '';
+    if(count($chk) > 1){
+        $chk1 = pdo_fetchall("SELECT * FROM ".tablename('wxrun_chk')." WHERE realname='{$realname}' AND company='{$team['team_name']}' AND phone= '{$phone}'");
+        if(count($chk) < 1){
+            die(json_encode(['code'=>'no','msg'=>'请校验所属公司,姓名,手机号']));
+        }
+        $where = " AND phone = '{$phone}'";
+    }else if(count($chk) < 1){
+        die(json_encode(['code'=>'no','msg'=>'请校验所属公司及姓名']));
+    }
+
+    $user = pdo_fetch("SELECT * FROM ".tablename('wxrun_wxrun')." WHERE uniacid=$uniacid AND third_id={$third['id']} AND tm_id = $tm_id AND realname='$realname'".$where);
     if(empty($user)){
-        $res = pdo_update('wxrun_wxrun',['tm_id'=>$tm_id,'realname'=>$realname,'tm_join'=>time()],['openid'=>$openid,'third_id'=>$third['id']]);
+        $res = pdo_update('wxrun_wxrun',['tm_id'=>$tm_id,'realname'=>$realname,'tm_join'=>time(),'phone'=>$phone],['openid'=>$openid,'third_id'=>$third['id']]);
         if($res){
             die(json_encode(['code'=>'ok','msg'=>'加入公司成功']));
         }else{
             die(json_encode(['code'=>'no','msg'=>'加入公司失败']));
         }
     }else{
-        die(json_encode(['code'=>'no','msg'=>'该姓名已被占用']));
+        die(json_encode(['code'=>'no','msg'=>'请校验所属公司,姓名,手机号']));
     }
 
 }
@@ -814,6 +852,38 @@ function teamDetail($uniacid,$appid){
         'rank'=>'欢迎加入我们公司',
     ];
     die(json_encode(['code'=>'ok','msg'=>'成功','data'=>['ranklist'=>$rankList,'rank'=>$rank]]));
+}
+//获取参与率
+function getJoinLv($uniacid,$appid){
+    $third = getThird($uniacid,$appid);
+    $sql = "SELECT company,count(*) as total FROM ".tablename('wxrun_chk')." WHERE third_id={$third['id']} GROUP BY company ";
+    $all = pdo_fetchall($sql);
+    $sql="SELECT * FROM ".tablename('wxrun_rank')." WHERE uniacid=$uniacid AND third_id={$third['id']} AND status=1";
+    $rankac = pdo_fetch($sql);
+    $daynum = (strtotime(date('Y-m-d')) - $rankac['startTime']) / (24*3600);
+    foreach($all as $k=> $v){
+        if($v['company'] == '' || $v['total'] <=0){
+            unset($all[$k]);
+            continue;
+        }
+        $sql = "SELECT count(*) as num,wt.team_img FROM ".tablename('wxrun_wxrun')." ww left join ".tablename('wxrun_team')." wt on wt.id = ww.tm_id WHERE wt.team_name='{$v['company']}' ";
+        $team = pdo_fetch($sql);
+        $all[$k]['num'] = $team['num'];
+        $all[$k]['img'] = $team['team_img'];
+
+        $company = pdo_fetch("SELECT id FROM ".tablename('wxrun_team')." WHERE team_name = '{$v['company']}' AND third_id = {$third['id']} AND uniacid = $uniacid");
+        if(!empty($company)){
+            $sql = "SELECT count(*) as num FROM ".tablename('wxrun_step')." WHERE third_id = {$third['id']} AND tid = {$company['id']} AND step > 3500 ";
+            $count = pdo_fetch($sql);
+        }
+        if(empty($count)){
+            $count['num'] = 0;
+        }
+
+        $all[$k]['lv'] = number_format($count['num'] / ($v['total'] * $daynum) * 100,2);
+    }
+    $data = my_sort($all,'lv');
+    die(json_encode(['code'=>'ok','msg'=>'成功','data'=>$data]));
 }
 //递归创建目录
 function mkdirs($path) {

@@ -35,6 +35,7 @@ App({
                             // console.log(oo)
                             wx.setStorageSync('sessionKey', oo.sessionKey);
                             wx.setStorageSync('openid', oo.openid);
+                            that.globalData.openid = oo.openid;
                         }
                     })
                 }
@@ -46,11 +47,13 @@ App({
         if (wx.getStorageSync('platform') == 'devtools' || wx.getStorageSync('platform') == 'ios') {
             oo = o.data;//工具用
         } else {
+            // console.log(o)
             oo = JSON.parse(o.data.trim());//线上用
         }
         return oo;
     },
     globalData: {
         userInfo: null,
+        openid:'',
     }
 })

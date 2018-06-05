@@ -154,6 +154,7 @@ Page({
             data: { a: 'getIsCollect', rid: wx.getStorageSync('rid'), openid: wx.getStorageSync('openid') },
             success: function (res) {
                 let o = app.strToJson(res);
+                console.log(o)
                 wx.setStorageSync('isCollect', o.code);
                 if (o.code == 'ok') {
                     that.setData({
@@ -178,13 +179,11 @@ Page({
             data: { a: 'getGiftRes', rid: wx.getStorageSync('rid') },
             success: function (res) {
                 let o = app.strToJson(res)
-                // console.log(o)
+                 console.log(o)
                 that.setData({
-                    count: o.total,
-                    keywords: o.keywords,
-                    
+                    count: o.total, 
                 });
-                if (o.length > 0) {
+                if (o.giftList.length > 0) {
                     that.setData({
                         allres: o.giftList,
                     })
@@ -199,10 +198,11 @@ Page({
             url: config.service.requestUrl,
             data: { a: 'getGiveLog', rid: wx.getStorageSync('rid'), openid: wx.getStorageSync('openid') },
             success: function (res) {
-                
-                if (res.data.length > 0){
+                var o = app.strToJson(res);
+                console.log(o)
+                if (o.length > 0){
                     that.setData({
-                        allLog: res.data,
+                        allLog: o,
                     })
                 }
             }
@@ -228,6 +228,7 @@ Page({
                     actTime: o.startTime + " - " + o.endTime,
                     actContent: o.content,
                     giftContent: o.giftContent,
+                    keywords: o.keywords,
                 })
             }
         })

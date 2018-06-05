@@ -19,7 +19,6 @@ Page({
         preimg:'',
         teamname:'',
         teamimg:'',
-        tmid:0,
         isdetail:false,
         chartList:null,
     },
@@ -134,7 +133,6 @@ Page({
                 that.setData({
                     rank: o.data.rank,
                     rankList: o.data.ranklist,
-                    //tmid: res.data.data.rank.id ? res.data.data.rank.id :0,
                     isDetail: false,
                     chartList: o.data.charts,
                 });
@@ -241,16 +239,17 @@ Page({
                 url: config.service.requestUrl,
                 data: { a: 'teamDetail', tmid: op.currentTarget.id, },
                 success: function (res) {
-                    //console.log(res)
+                    
+                    let o = app.strToJson(res);
+                    // console.log(o)
                     that.setData({
-                        rank: res.data.data.rank,
-                        rankList: res.data.data.ranklist,
-                        tmid: res.data.data.rank.id ? res.data.data.rank.id : 0,
+                        rank: o.data.rank,
+                        rankList: o.data.ranklist,
                         isDetail:true,
                     });
-                    if (res.data.code == 'no') {
+                    if (o.code == 'no') {
                         wx.showToast({
-                            title: res.data.msg,
+                            title: o.msg,
                             icon: 'none',
                             duration: 2000
                         })

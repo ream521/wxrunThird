@@ -1,0 +1,50 @@
+/* pages/joinlv/joinlv.wxss */
+.content{
+    border-radius:30rpx;
+    background: #fff;
+    margin:30rpx;
+    overflow:hidden;
+}
+.row{
+    height:120rpx;
+    border-bottom:dashed 2rpx #ddd;
+}
+.img{
+    width:80rpx;
+    height:80rpx;
+    border-radius: 80rpx;
+    margin-left:20rpx; 
+    margin-right:20rpx; 
+}
+.step{
+    width:22%;
+    text-align: right;
+    margin-right: 20rpx;
+    color:#44b549
+}
+.rank{
+    width:12%;
+    text-align: center;
+}
+.nickname{
+    width:45%;
+    margin-right: 20rpx;
+    overflow: hidden;
+    font-size: 24rpx;
+}
+.unit{
+    font-size: 24rpx;
+    color:#e15f63;
+}
+.content .row:nth-child(1){
+    background:#d9edf7;
+}
+.content .row:nth-child(2){
+    background:#fcf8e3;
+}
+.content .row:nth-child(3){
+    background:#dff0d8;
+}
+.content .row:nth-last-child(1){
+    border-bottom:none;
+}

@@ -146,7 +146,7 @@ page {
     border:none;
 }
 .btn{
-    width:60%;
+    width:80%;
     height:80rpx;
     line-height: 80rpx;
     border-radius: 80rpx;
@@ -155,7 +155,7 @@ page {
     color:#fff;
     font-size: 40rpx;
     font-weight: 700;
-    background: linear-gradient(to right, #18bde8, #018cc8);
+    background: linear-gradient(to right, #ff7764, #fa3332);
 }
 .packer{
     margin:30rpx auto;
