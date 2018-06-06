@@ -2,12 +2,16 @@
 <view class="container">
     <view hidden="{{step1}}" class="step1" style="background: url({{bg_img}}) center top no-repeat;background-size:750rpx;">
         <view class="header">
-          <view class="h-title-h">
+            <view class="h-title-h">
             </view>
-            <view class="h-msg">
-                已有 {{count}} 人集齐“{{keywords}}”
+            <view class='row'>
+                <image class='h-logo' src="http://hygs1.web.mai022.com/wxrunapp/img/logo.png"></image>
+                <view class="h-msg">
+                
+                已有 {{count}} 人集齐“{{keywords}}”,你要加油哦！
             </view>
-
+            </view>
+            
             <view class="giftres" wx:if="{{iscollect}}">
 
                 <!-- <image src="{{gift_bgimg}}" class="t-img h600"></image> -->

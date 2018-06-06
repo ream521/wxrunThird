@@ -367,8 +367,31 @@ Page({
     //跳转
     redirectTo: function (e) {
         // console.log(e);
-        wx.navigateTo({
-            url: e.target.dataset.link,
+        let that = this;
+        wx.request({
+            url: config.service.requestUrl,
+            data: { a: 'isrank', openid: wx.getStorageSync('openid') },
+            success: function (res) {
+                let o = app.strToJson(res)
+                if (o.code == 'ok') {
+                    wx.navigateTo({
+                        url: e.target.dataset.link,
+                    })
+                } else if (o.code == 'no1') {
+
+                    that.setData({
+                        show: true,
+                        yibiaopan: true,
+                        objectMultiArray: o.data,
+                    })
+                } else {
+                    wx.showToast({
+                        title: o.msg,
+                        icon: 'none',
+                        duration: 2000
+                    })
+                }
+            }
         })
     },
     //转发
@@ -453,9 +476,33 @@ Page({
     },
     //跳转到排行榜页面
     personRank: function () {
-        wx.navigateTo({
-            url: '../rank/rank?cid=1',
+        let that = this;
+        wx.request({
+            url: config.service.requestUrl,
+            data: { a: 'isrank', openid: wx.getStorageSync('openid') },
+            success: function (res) {
+                let o = app.strToJson(res)
+                if (o.code == 'ok') {
+                    wx.navigateTo({
+                        url: '../rank/rank?cid=1',
+                    })
+                } else if (o.code == 'no1') {
+
+                    that.setData({
+                        show: true,
+                        yibiaopan: true,
+                        objectMultiArray: o.data,
+                    })
+                } else {
+                    wx.showToast({
+                        title: o.msg,
+                        icon: 'none',
+                        duration: 2000
+                    })
+                }
+            }
         })
+        
     },
    
     //跳转到排行榜页面

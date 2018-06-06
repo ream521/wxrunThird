@@ -643,10 +643,12 @@ function getRankList($uniacid,$appid){
 
         $team = getTeam($user['tm_id']);
 
-        $sql = "SELECT rt.id,rt.team_name as nickname,rt.team_img as avatar,SUM(rw.today_step) as today_step FROM ".tablename('wxrun_wxrun')." rw JOIN ".tablename('wxrun_team')." rt ON rw.tm_id = rt.id WHERE rw.uniacid=$uniacid AND rw.third_id={$third['id']} AND rw.tm_id !=0 GROUP BY rw.tm_id ORDER BY today_step DESC ";
+//        $sql = "SELECT rt.id,rt.team_name as nickname,rt.team_img as avatar,SUM(rw.today_step) as today_step FROM ".tablename('wxrun_wxrun')." rw JOIN ".tablename('wxrun_team')." rt ON rw.tm_id = rt.id WHERE rw.uniacid=$uniacid AND rw.third_id={$third['id']} AND rw.tm_id !=0 GROUP BY rw.tm_id ORDER BY today_step DESC ";
+        $sql = "SELECT openid,nickname,avatar,today_step FROM ".tablename('wxrun_wxrun')." WHERE uniacid=$uniacid AND third_id={$third['id']} AND tm_id = {$user['tm_id']} ORDER BY today_step DESC ";
         $ranklist = pdo_fetchall($sql);
         foreach($ranklist as $k=>$v){
-            if($v['id'] == $user['tm_id']){
+            $v['nickname'] = base64_decode($v['nickname']);
+            if($v['openid'] == $openid){
                 $rank = $v;
                 $rank['rank'] = '第 '.($k+1)." 名";
             }
@@ -738,7 +740,7 @@ function isrank($uniacid,$appid){
     $user = getUserByOpenid($uniacid,$third['id'],$openid);
     if($user['tm_id'] == 0 || $user['realname'] == ''){
         $data = selectCompany($uniacid,$third['id'],'pid=0');
-        array_unshift($data,['id'=>0,'team_name'=>'请选择所属公司']);
+        array_unshift($data,['id'=>0,'team_name'=>'》  请选择所属公司  《']);
         die(json_encode(['code'=>'no1','msg'=>'选择所在公司','data'=>$data]));
     }
 
@@ -866,16 +868,19 @@ function getJoinLv($uniacid,$appid){
             unset($all[$k]);
             continue;
         }
-        $sql = "SELECT count(*) as num,wt.team_img FROM ".tablename('wxrun_wxrun')." ww left join ".tablename('wxrun_team')." wt on wt.id = ww.tm_id WHERE wt.team_name='{$v['company']}' ";
-        $team = pdo_fetch($sql);
-        $all[$k]['num'] = $team['num'];
-        $all[$k]['img'] = $team['team_img'];
 
-        $company = pdo_fetch("SELECT id FROM ".tablename('wxrun_team')." WHERE team_name = '{$v['company']}' AND third_id = {$third['id']} AND uniacid = $uniacid");
+        $company = pdo_fetch("SELECT id,team_img FROM ".tablename('wxrun_team')." WHERE team_name = '{$v['company']}' AND third_id = {$third['id']} AND uniacid = $uniacid");
+        $all[$k]['img'] = $company['team_img'];
+//        var_dump($v);die;
         if(!empty($company)){
             $sql = "SELECT count(*) as num FROM ".tablename('wxrun_step')." WHERE third_id = {$third['id']} AND tid = {$company['id']} AND step > 3500 ";
             $count = pdo_fetch($sql);
         }
+
+        $sql = "SELECT count(*) as num FROM ".tablename('wxrun_wxrun')."  WHERE tm_id = {$company['id']}";
+        $team = pdo_fetch($sql);
+        $all[$k]['num'] = $team['num'];
+
         if(empty($count)){
             $count['num'] = 0;
         }

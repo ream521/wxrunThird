@@ -7,11 +7,14 @@ page{
     text-align: center;
 }
 .h-title-h{ height: 20rpx;}
+.h-logo{
+    height:120rpx;width:120rpx;margin-left:20rpx;
+}
 .h-msg {
     flex-direction: row;
     margin: auto;
-    width: 90%;
-    background: #f45759;
+    width: 78%;
+    background: rgba(0,0,0,0.4) ;
     height: 60rpx;
     line-height: 60rpx;
     color: #fff;

@@ -85,7 +85,7 @@
 .ad {
     margin: 10rpx 20rpx 0;
     width: 94.5%;
-    height: 200rpx;
+    height: 330rpx;
     border-radius: 20rpx;
 }
 
@@ -157,7 +157,11 @@
     background: #fff;
     margin: 0 auto;
     padding: 20rpx;
+    font-size:34rpx
 }
 .bg-tip .tips{
     color:#fa3232;
+}
+.auth{
+    background:#25C400;color:#fff;font-weigh:700;line-height:70rpx;height:70rpx;width:60%;margin-top:20rpx;font-size: 34rpx;
 }

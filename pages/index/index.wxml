@@ -59,7 +59,7 @@
 <view class="modal-dialog" wx:if="{{isIos}}">
     <view class="modal-close" bindtap="close">×</view>
     <view class="bg-tip">
-       <view class="tips"> 温馨提示：</view>
+       <view class="tips" style='font-size:40rpx;'> 温馨提示：</view>
        请确保开启“<text class="tips">健康</text>”app 和“<text class="tips">微信运动</text>”
     </view>
 </view> 
@@ -98,6 +98,10 @@
 
 <view class="modal-dialog" style='margin-top:35%;' wx:if="{{auth}}">
     <view class="bg-tip">
-        <button wx:if="{{canIUse}}" open-type="getUserInfo" style="background:#25C400;color:#fff;font-weigh:700;" bindgetuserinfo="getUserInfo">授权登录</button>
+        <view class="tips" style='font-size:40rpx;'> 授权提示：</view>
+            <view style='margin:0 30rpx;'>
+            为确保正常使用天物健步行小程序请授权登录
+            </view>
+        <button wx:if="{{canIUse}}" open-type="getUserInfo" class="auth" bindgetuserinfo="getUserInfo">授权登录</button>
     </view>
 </view>
