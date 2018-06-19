@@ -169,15 +169,15 @@ Page({
         // }
         //获取广告
         that.getAds();
-        that.getUid();
         that.setData({
             opData:option,
         })
     },
     onReady: function (e) {
         //获取微信运动步数
-        
-        this.getWxRunStep();
+        var that = this;
+        that.getUid();
+        that.getWxRunStep();
 
     },
     //关联索取和赠送
@@ -249,25 +249,42 @@ Page({
                         openid: wx.getStorageSync('openid')
                     },
                     success: function (o) {
-                        // console.log(o)
-                        var oo = app.strToJson(o);
-                        if (wx.getStorageSync('platform') == 'devtools' || wx.getStorageSync('platform') == 'ios') {
-                            
-                            that.setData({
-                                isIos: true,
-                                yibiaopan: true,
+                        console.log(o)
+                        if (o.data != ''){
+                            var oo = app.strToJson(o);
+                            if (wx.getStorageSync('platform') == 'devtools' || wx.getStorageSync('platform') == 'ios') {
+                                
+                                that.setData({
+                                    isIos: true,
+                                    yibiaopan: true,
+                                })
+                            } 
+                            // console.log(oo)
+                            //获取当天的步数
+                            if (oo.stepInfoList[30] != undefined){
+                                wx.setStorageSync('wx_step', oo.stepInfoList[30].step);
+                                wx.setStorageSync('wx_steplist', oo.stepInfoList);
+
+                                that.setData({
+                                    wxrun: oo.stepInfoList[30].step
+                                });
+                                that.canvasArc();
+                                that.syncStep(oo.stepInfoList);
+                                that.getFuZi(oo.stepInfoList[30].step);
+                            }else{
+                                wx.showToast({
+                                    title: '获取步数失败',
+                                    icon: 'none',
+                                    duration: 2000
+                                })
+                            }
+                        }else{
+                            wx.showToast({
+                                title: '获取步数失败',
+                                icon: 'none',
+                                duration: 2000
                             })
-                        } 
-                        // console.log(oo)
-                        //获取当天的步数
-                        wx.setStorageSync('wx_step', oo.stepInfoList[30].step);
-                        wx.setStorageSync('wx_steplist', oo.stepInfoList);
-                        
-                        that.setData({
-                            wxrun: oo.stepInfoList[30].step
-                        });
-                        that.canvasArc();
-                        that.getFuZi(oo.stepInfoList[30].step);
+                        }
                     }
                 })
             },
@@ -330,8 +347,11 @@ Page({
     canvasArc: function () {
         // 使用 wx.createContext 获取绘图上下文 context
         var context = wx.createCanvasContext('firstCanvas');
-        var step = wx.getStorageSync('wx_step') + " 步";
-        var end = (wx.getStorageSync('wx_step') / 20000 * 1.4 * Math.PI) + 0.8 * Math.PI;
+        var step = wx.getStorageSync('wx_step');
+        if (wx.getStorageSync('wx_step') == undefined){
+            step = 0;
+        }
+        var end = (step / 20000 * 1.4 * Math.PI) + 0.8 * Math.PI;
 
 
         context.beginPath()//开始画白色的底
@@ -401,9 +421,9 @@ Page({
             this.cancel();
         }
         return {
-            title: '微信运动,集字领福利',
+            title: '天津物产健步行',
             path: '/pages/index/index',
-            imageUrl: config.service.imageUrl+"indexshare.jpg",
+            imageUrl: config.service.imageUrl +"wx_share.jpg",
             success: function (res) {
                 // 转发成功
                 //console.log('转发成功');
@@ -558,7 +578,6 @@ Page({
                         auth:false,
                     })
                 }
-                that.syncStep(wx.getStorageSync('wx_steplist'));
             }
         })
     }, 

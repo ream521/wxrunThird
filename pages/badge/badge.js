@@ -334,15 +334,18 @@ Page({
 
     //转发
     onShareAppMessage: function (res) {
-        var title = '微信运动';
+        console.log(res)
+        var title = '天津物产健步行';
         var that = this;
-        var kwd = res.target.dataset.keyword;
-        var id = res.target.id;
+        var kwd ;
+        var id ;
         var sharepath = '/pages/index/index';
-        var imageurl = '';
-        //console.log(res)
+        var imageurl = config.service.imageUrl + "wx_share.jpg";
+        
         if (res.from === 'button') {
             imageurl = res.target.dataset.img;
+            kwd = res.target.dataset.keyword;
+            id = res.target.id;
             // 来自页面内转发按钮,关闭分享
             if (id == 'givef') {
                 title = "微信运动,送你一个“" + kwd + "”字";

@@ -127,9 +127,9 @@
 
                     活动及兑奖说明
                 </view>
-                <view class="a-body">
+                <text class="a-body">
                     {{actContent}}
-                </view>
+                </text>
             </view>
 
         </view>

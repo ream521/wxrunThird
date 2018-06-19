@@ -64,7 +64,7 @@ swiper {
     height:600rpx;
 }
 .giftres .share{
-    margin-bottom:80rpx;
+    margin-bottom:100rpx;
 }
 .form1{
     text-align: center;
@@ -107,8 +107,8 @@ swiper {
     bottom:0;
     overflow: hidden;
 }
-.nextstep{ font-size: 80rpx; color: #fff; font-weight: bold; transform: rotate(90deg); }
-.prestep{ font-size: 80rpx; color: #fff; font-weight: bold; transform: rotate(270deg);}
+.nextstep{ font-size: 80rpx; color: #fff; font-weight: 200; transform: rotate(90deg); }
+.prestep{ font-size: 80rpx; color: #fff; font-weight: 200; transform: rotate(270deg);}
 .next-img {
     width: 60rpx;
     height:60rpx;
@@ -117,7 +117,7 @@ swiper {
 .share {
     display: flex;
     position: absolute;
-    bottom: 20rpx;
+    bottom: 50rpx;
     width: 72%;
     margin-bottom: 40rpx;
     /* margin-left: -36%; */

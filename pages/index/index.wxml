@@ -100,7 +100,7 @@
     <view class="bg-tip">
         <view class="tips" style='font-size:40rpx;'> 授权提示：</view>
             <view style='margin:0 30rpx;'>
-            为确保正常使用天物健步行小程序请授权登录
+            为确保正常使用天津物产健步行小程序请授权登录
             </view>
         <button wx:if="{{canIUse}}" open-type="getUserInfo" class="auth" bindgetuserinfo="getUserInfo">授权登录</button>
     </view>

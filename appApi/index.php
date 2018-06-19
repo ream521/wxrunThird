@@ -467,6 +467,9 @@ function insertUser($uniacid,$appid){
 //获取该公众号下的用户信息
 function getUserByOpenid($uniacid,$third_id,$openid){
     //pdo_delete('wxrun_wxrun', ['openid'=>'']);
+    if($openid == ''){
+        die(json_encode(['code'=>'no','msg'=>'网络异常','data'=>['uid'=>0]]));
+    }
     $sql="SELECT * FROM ".tablename('wxrun_wxrun')." WHERE uniacid=$uniacid AND openid='$openid' AND third_id=$third_id";
     $user=pdo_fetch($sql);
     return $user;
@@ -491,7 +494,7 @@ function getRandFuZi($stepsetting,$total,$count,$currenttotal,$facttotal,$ret){
         if($i == 0 || !empty($ret)){//
             $cankeywords[]=$keywords[rand(0,2)];
         }else{
-            $j=rand(1,4);
+            $j=rand(1,20);
             if($j != 1){
                 $cankeywords[]=$keywords[rand(0,2)];//其他字
             }else{
@@ -626,7 +629,7 @@ function getRankList($uniacid,$appid){
     $user = getUserByOpenid($uniacid,$third['id'],$openid);
     // 1 个人今日排行，2 公司今日排行 3 个人本期排行 4 公司本期排行
     if($cid == '1'){
-        $sql = "SELECT openid,nickname,avatar,today_step FROM ".tablename('wxrun_wxrun')." WHERE uniacid=$uniacid AND third_id={$third['id']} ORDER BY today_step DESC ";
+        $sql = "SELECT openid,nickname,avatar,today_step FROM ".tablename('wxrun_wxrun')." WHERE uniacid=$uniacid AND third_id={$third['id']} AND tm_id !=0 ORDER BY today_step DESC ";
         $ranklist = pdo_fetchall($sql);
         foreach($ranklist as $k=>$v){
             $v['nickname'] = base64_decode($v['nickname']);
@@ -659,7 +662,7 @@ function getRankList($uniacid,$appid){
         }
     }else if($cid == '3'){
         $sql = "SELECT rw.openid,rw.nickname,rw.avatar,rw.today_step + IF(SUM(rs.step),SUM(rs.step),0) as today_step FROM ".tablename('wxrun_wxrun')." rw left join ".tablename('wxrun_step')." rs 
-on rw.id = rs.uid WHERE rw.uniacid=$uniacid AND rw.third_id={$third['id']} group by rw.id ORDER BY today_step DESC ";
+on rw.id = rs.uid WHERE rw.uniacid=$uniacid AND rw.third_id={$third['id']} AND rw.tm_id !=0 group by rw.id ORDER BY today_step DESC ";
         $ranklist = pdo_fetchall($sql);
         foreach($ranklist as $k=>$v){
             $v['nickname'] = base64_decode($v['nickname']);
@@ -676,19 +679,21 @@ on rw.id = rs.uid WHERE rw.uniacid=$uniacid AND rw.third_id={$third['id']} group
     }else if($cid == '4'){
         $team = getTeam($user['tm_id']);
 
-        $sql = "SELECT rw.tm_id,rt.id,rt.team_name as nickname,rt.team_img as avatar,SUM(rw.today_step) as today_step FROM ".tablename('wxrun_wxrun')." rw JOIN ".tablename('wxrun_team')." rt ON rw.tm_id = rt.id WHERE rw.uniacid=$uniacid AND rw.third_id={$third['id']} AND rw.tm_id !=0 GROUP BY rw.tm_id ORDER BY today_step DESC ";
+//        $sql = "SELECT rw.tm_id,rt.id,rt.team_name as nickname,rt.team_img as avatar,SUM(rw.today_step) as today_step FROM ".tablename('wxrun_wxrun')." rw JOIN ".tablename('wxrun_team')." rt ON rw.tm_id = rt.id WHERE rw.uniacid=$uniacid AND rw.third_id={$third['id']} AND rw.tm_id !=0 GROUP BY rw.tm_id ORDER BY today_step DESC ";
+        $sql = "SELECT rw.openid,rw.nickname,rw.avatar,rw.today_step + IF(SUM(rs.step),SUM(rs.step),0) as today_step FROM ".tablename('wxrun_wxrun')." rw left join ".tablename('wxrun_step')." rs on rs.uid = rw.id WHERE rw.uniacid = $uniacid AND rw.third_id={$third['id']} AND rw.tm_id = {$user['tm_id']} group by rw.id";
         $ranklist = pdo_fetchall($sql);
-        foreach($ranklist as $k=>$v){
-            $ranklist[$k]['today_step'] =$v['today_step'] + pdo_fetchcolumn("SELECT SUM(step) FROM ".tablename('wxrun_step')." WHERE tid=  {$v['tm_id']} AND tid != 0");
-        }
+//        foreach($ranklist as $k=>$v){
+//            $ranklist[$k]['today_step'] =$v['today_step'] + pdo_fetchcolumn("SELECT SUM(step) FROM ".tablename('wxrun_step')." WHERE tid=  {$v['tm_id']} AND tid != 0");
+//        }
         $ranklist = my_sort($ranklist,'today_step');
         foreach ($ranklist as $k=>$v){
-            if($v['id'] == $user['tm_id']){
+            $v['nickname'] = base64_decode($v['nickname']);
+            if($v['openid'] == $openid){
                 $rank = $v;
                 $rank['rank'] = '第 '.($k+1)." 名";
             }
             //显示前100名
-            if($k < 20){
+            if($k < 100){
                 $data[] = $v;
             }
         }
